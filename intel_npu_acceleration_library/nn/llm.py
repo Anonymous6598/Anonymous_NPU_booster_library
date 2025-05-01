@@ -242,8 +242,8 @@ class LlamaAttention(torch.nn.Module):
 
         attn_output = self.o_proj(attn_output)
 
-        return attn_output, None, past_key_value
-
+        return attn_output, None
+        
     @staticmethod
     def fromTorch(
         layer: torch.nn.Module, dtype: torch.dtype = torch.float16
