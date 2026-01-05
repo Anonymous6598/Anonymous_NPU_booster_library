@@ -12,7 +12,7 @@ from transformers import AutoTokenizer
 from intel_npu_acceleration_library.nn import Linear
 from intel_npu_acceleration_library.backend import run_factory, MLP
 from functools import partial
-from typing import Optional, List, Generator, Tuple
+from typing import Optional, List, Generator
 from transformers.cache_utils import Cache
 import torch
 import uuid
@@ -154,7 +154,7 @@ class LlamaAttention(torch.nn.Module):
 
         self.hidden_size = config.hidden_size
         self.num_heads = config.num_attention_heads
-        self.head_dim = getattr(config, "head_dim", self.hidden_size // self.num_heads)
+        self.head_dim = self.hidden_size // self.num_heads
         self.num_key_value_heads = config.num_key_value_heads
         self.num_key_value_groups = self.num_heads // self.num_key_value_heads
         self.is_causal = True
@@ -169,9 +169,6 @@ class LlamaAttention(torch.nn.Module):
         output_attentions: Optional[bool] = False,
         use_cache: Optional[bool] = False,
         cache_position: Optional[torch.LongTensor] = None,
-        position_embeddings: Optional[
-            Tuple[torch.Tensor, torch.Tensor]
-        ] = None,  # will become mandatory in Transformers v4.45
     ):
         """Torch module forward method.
 
@@ -183,7 +180,6 @@ class LlamaAttention(torch.nn.Module):
             output_attentions (Optional[bool], optional):  Whether or not to return the attentions tensors of all attention layers.. Defaults to False.
             use_cache (Optional[bool], optional): If set to `True`, `past_key_values` key value states are returned. Defaults to False.
             cache_position (Optional[torch.LongTensor], optional): Cache position useful for static cache applications . Defaults to None.
-            position_embeddings (Optional[Tuple[torch.Tensor, torch.Tensor]], optional): If set to a tuple, it means the `sin` and `cos` are uniformly calculated by the outer `LlamaModel` and passed in. Defaults to None.
 
         Returns:
             _type_: result
@@ -206,10 +202,7 @@ class LlamaAttention(torch.nn.Module):
             bsz, q_len, self.num_key_value_heads, self.head_dim
         ).transpose(1, 2)
 
-        if position_embeddings is None:
-            cos, sin = self.rotary_emb(value_states, position_ids)
-        else:
-            cos, sin = position_embeddings
+        cos, sin = self.rotary_emb(value_states, position_ids)
 
         query_states, key_states = apply_rotary_pos_emb(
             query_states, key_states, cos, sin, position_ids
@@ -238,12 +231,12 @@ class LlamaAttention(torch.nn.Module):
         )
 
         attn_output = attn_output.transpose(1, 2).contiguous()
-        attn_output = attn_output.view(bsz, q_len, -1)
+        attn_output = attn_output.reshape(bsz, q_len, self.hidden_size)
 
         attn_output = self.o_proj(attn_output)
 
-        return attn_output, None
-        
+        return attn_output, None, past_key_value
+
     @staticmethod
     def fromTorch(
         layer: torch.nn.Module, dtype: torch.dtype = torch.float16
@@ -357,7 +350,6 @@ def generate_with_static_shape(
         out = model(
             input_ids=input_ids,
             attention_mask=attention_mask,
-            position_ids=position_ids,
             past_key_values=past_key_values,
         )
 

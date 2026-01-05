@@ -4,7 +4,6 @@
 #
 
 from intel_npu_acceleration_library.compiler import compile
-from intel_npu_acceleration_library.compiler import CompilerConfig
 from intel_npu_acceleration_library.dtypes import int4
 from sklearn.metrics import r2_score
 import intel_npu_acceleration_library
@@ -20,8 +19,8 @@ class NN(torch.nn.Module):
         self,
     ) -> None:
         super().__init__()
-        self.l1 = torch.nn.Linear(32, 128, bias=False)
-        self.l2 = torch.nn.Linear(128, 32, bias=False)
+        self.l1 = torch.nn.Linear(32, 64)
+        self.l2 = torch.nn.Linear(64, 32)
         self.relu = torch.nn.functional.relu
 
     def forward(self, x):
@@ -35,13 +34,11 @@ x = 128 * (torch.rand((16, 32), dtype=torch.float16) - 0.5)
 @pytest.mark.parametrize("dtype", [torch.float16, torch.int8, int4])
 def test_compilation(dtype):
 
-    torch.manual_seed(42)
-    model = NN().half()
+    model = NN()
 
-    y_ref = model(x).detach()
+    y_ref = model(x.to(torch.float32)).detach()
 
-    compiler_conf = CompilerConfig(dtype=dtype)
-    compiled_model = compile(model, compiler_conf)
+    compiled_model = compile(model, dtype)
 
     assert compiled_model
 
@@ -89,13 +86,15 @@ def test_torch_compile():
     model = NN()
     y_ref = model(x.to(torch.float32)).detach()
 
-    if sys.platform == "win32" and Version(torch.__version__) < Version("2.2.2"):
+    if (
+        sys.platform == "win32" and Version(torch.__version__) < Version("2.2.2")
+    ) or sys.version_info >= (3, 12):
         with pytest.raises(RuntimeError) as e:
             compiled_model = torch.compile(model, backend="npu")
-        assert str(e.value) == "Windows not yet supported for torch.compile"
+            assert str(e.value) == "Windows not yet supported for torch.compile"
     else:
         compiled_model = torch.compile(model, backend="npu")
-        y = compiled_model(x.to(torch.float32)).detach()
+        y = compiled_model(x).detach()
         assert 1 - r2_score(y_ref.numpy(), y.numpy()) < 0.01
 
 
@@ -104,8 +103,7 @@ def test_compile_training(dtype):
 
     model = NN()
 
-    compiler_conf = CompilerConfig(dtype=dtype, training=True)
-    compiled_model = compile(model, compiler_conf)
+    compiled_model = compile(model, dtype, training=True)
 
     for name, layer in compiled_model.named_children():
         if dtype == torch.int8:
@@ -119,8 +117,10 @@ def test_compile_inference(dtype):
 
     model = NN()
 
-    compiler_conf = CompilerConfig(dtype=dtype)
-    compiled_model = compile(model, compiler_conf)
+    compiled_model = compile(model, dtype)
 
     for name, layer in compiled_model.named_children():
         assert layer.training == False
+
+
+test_torch_compile()

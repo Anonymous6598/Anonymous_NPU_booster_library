@@ -1,14 +1,3 @@
-## PROJECT NOT UNDER ACTIVE MANAGEMENT
-
-This project will no longer be maintained by Intel.
-
-Intel has ceased development and contributions including, but not limited to, maintenance, bug fixes, new releases, or updates, to this project.  
-
-Intel no longer accepts patches to this project.
-
-If you have an ongoing need to use this project, are interested in independently developing it, or would like to maintain patches for the open source software community, please create your own fork of this project.  
-
-Contact: webadmin@linux.intel.com
 # Intel® NPU Acceleration Library
 
 [![Test](https://github.com/intel/intel-npu-acceleration-library/actions/workflows/test.yml/badge.svg)](https://github.com/intel/intel-npu-acceleration-library/actions/workflows/test.yml) [![Style](https://github.com/intel/intel-npu-acceleration-library/actions/workflows/style.yml/badge.svg)](https://github.com/intel/intel-npu-acceleration-library/actions/workflows/style.yml) [![Documentation](https://github.com/intel/intel-npu-acceleration-library/actions/workflows/documentation.yml/badge.svg)](https://github.com/intel/intel-npu-acceleration-library/actions/workflows/documentation.yml)
@@ -17,18 +6,9 @@ Contact: webadmin@linux.intel.com
 
 [Documentation](https://intel.github.io/intel-npu-acceleration-library/)
 
-> [!IMPORTANT]
-> **Intel® NPU Acceleration Library – End of Life Announcement**
-> We are announcing the end of life for the Intel® NPU Acceleration Library. This decision marks the conclusion of a successful chapter, where this library enabled developers to explore and innovate with Intel NPUs.
-We are incredibly grateful to the community for making this library a success story. Your engagement, feedback, and creativity have been invaluable in driving AI innovation forward.
-As we move forward, we encourage you to adopt [OpenVINO™](https://github.com/openvinotoolkit/openvino) and [OpenVINO™ GenAI](https://github.com/openvinotoolkit/openvino.genai). These tools provide a robust and scalable way to leverage Intel NPUs, enabling developers to create exceptional AI experiences with Intel® Core™ Ultra processors and beyond.
-This repository has now been archived and will remain available for reference. While we close this chapter, we are excited to see the continued innovation within the community as you transition to these powerful tools.
-Thank you for being part of this incredible journey.
-
-
 The Intel® NPU Acceleration Library is a Python library designed to boost the efficiency of your applications by leveraging the power of the Intel Neural Processing Unit (NPU) to perform high-speed computations on compatible hardware.
 
-_Note: The **Intel® NPU Acceleration Library** is currently in active development, with our team  working to introduce a variety of features that are anticipated to dramatically enhance performance. For performant production ready solutions please refer to like [OpenVINO](https://github.com/openvinotoolkit/openvino) or [DirectML](https://devblogs.microsoft.com/directx/introducing-neural-processor-unit-npu-support-in-directml-developer-preview/). _
+_Note: The **Intel® NPU Acceleration Library** is currently in active development, with our team  working to introduce a variety of features that are anticipated to dramatically enhance performance._
 
 ## Intel NPU
 

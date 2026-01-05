@@ -5,8 +5,6 @@
 
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig
 from intel_npu_acceleration_library.compiler import compile
-from intel_npu_acceleration_library.compiler import CompilerConfig
-from intel_npu_acceleration_library.dtypes import int8, int4
 import argparse
 import torch
 import os
@@ -43,19 +41,15 @@ def export(model_id, dtype, output):
 
     if dtype == "fp16":
         print(f"Compiling model {model_id}")
-        dtype = torch.float16
+        torch_dtype = torch.float16
     elif dtype == "int8":
         print(f"Quantizing & Compiling model {model_id}")
-        dtype = int8
-    elif dtype == "int4":
-        print(f"Quantizing & Compiling model {model_id}")
-        dtype = int4
+        torch_dtype = torch.int8
     else:
         raise RuntimeError(f"Invalid dtype {dtype}")
 
     with torch.no_grad():
-        compiler_conf = CompilerConfig(dtype=dtype)
-        compile(model, compiler_conf)
+        compile(model, dtype=torch_dtype)
 
     filename = os.path.join(PATH, "model.pth")
     os.makedirs(PATH, exist_ok=True)

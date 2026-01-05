@@ -5,14 +5,10 @@
 
 from transformers import AutoTokenizer, TextStreamer
 from intel_npu_acceleration_library import NPUModelForSeq2SeqLM
-from intel_npu_acceleration_library.compiler import CompilerConfig
 
 model_id = "google/flan-t5-small"
 
-compiler_conf = CompilerConfig()
-model = NPUModelForSeq2SeqLM.from_pretrained(
-    model_id, use_cache=True, config=compiler_conf
-).eval()
+model = NPUModelForSeq2SeqLM.from_pretrained(model_id, use_cache=True).eval()
 tokenizer = AutoTokenizer.from_pretrained(model_id, use_default_system_prompt=True)
 tokenizer.pad_token_id = tokenizer.eos_token_id
 streamer = TextStreamer(tokenizer, skip_special_tokens=True)

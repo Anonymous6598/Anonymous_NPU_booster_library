@@ -4,7 +4,6 @@
 #
 
 from sklearn.metrics import r2_score
-from intel_npu_acceleration_library.compiler import CompilerConfig
 import numpy as np
 import intel_npu_acceleration_library
 import pytest
@@ -35,7 +34,7 @@ def test_explicit_quantization(batch, inC, outC):
     output = module.linear(input, outC, inC)
     assert output
 
-    module.compile()
+    module.compile(output)
 
     X = np.random.random((batch, inC)).astype(np.float16)
     W = np.random.randint(-127, 127, (outC, inC)).astype(np.int8)
@@ -62,7 +61,7 @@ def test_i8_quantization(batch, inC, outC):
     output = module.linear(input, outC, inC, False, wt_dtype=np.int8)
     assert output
 
-    module.compile()
+    module.compile(output)
 
     X = np.random.random((batch, inC)).astype(np.float16)
     W = np.random.randint(-127, 127, (outC, inC)).astype(np.int8)
@@ -71,7 +70,7 @@ def test_i8_quantization(batch, inC, outC):
     w_float = W.astype(np.float16) * S
     y_ref = np.matmul(X, w_float.T)
 
-    y = module.run(X, (W, S * np.sqrt(inC)), op_id="0000")
+    y = module.run(X, (W, S), op_id="0000")
 
     assert 1 - r2_score(y_ref, y) < 0.01
 
@@ -89,9 +88,7 @@ def test_compiled_quantized(batch, inC, outC):
 
     model = NN(inC, outC)
     y_ref = model(X.to(torch.float32)).detach()
-
-    compiler_conf = CompilerConfig(dtype=torch.int8)
-    compiled_model = intel_npu_acceleration_library.compile(model, compiler_conf)
+    compiled_model = intel_npu_acceleration_library.compile(model, torch.int8)
     assert compiled_model
 
     y1 = compiled_model(X).detach()
@@ -113,7 +110,7 @@ def test_i4_quantization(batch, inC, outC):
     output = module.linear(input, outC, inC, False, wt_dtype=np.uint8)
     assert output
 
-    module.compile()
+    module.compile(output)
 
     X = np.random.random((batch, inC)).astype(np.float16)
     S = np.random.random((outC, 1)).astype(np.float16)
@@ -127,7 +124,7 @@ def test_i4_quantization(batch, inC, outC):
         torch.from_numpy(W)
     ).numpy()
 
-    y = module.run(X, (W_npu, S * np.sqrt(inC)), op_id="0000")
+    y = module.run(X, (W_npu, S), op_id="0000")
 
     # assert y has no NaN
     assert not np.isnan(y).any()

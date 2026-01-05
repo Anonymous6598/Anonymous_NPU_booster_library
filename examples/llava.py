@@ -12,7 +12,6 @@ from transformers import (
     TextStreamer,
 )
 from transformers.feature_extraction_utils import BatchFeature
-from intel_npu_acceleration_library.compiler import CompilerConfig
 import intel_npu_acceleration_library
 import torch
 
@@ -22,8 +21,7 @@ checkpoint = "Intel/llava-gemma-2b"
 # Load model
 model = LlavaForConditionalGeneration.from_pretrained(checkpoint)
 
-compiler_conf = CompilerConfig()
-model = intel_npu_acceleration_library.compile(model, compiler_conf)
+model = intel_npu_acceleration_library.compile(model)
 
 image_processor = CLIPImageProcessor.from_pretrained(checkpoint)
 tokenizer = AutoTokenizer.from_pretrained(checkpoint)
