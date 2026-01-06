@@ -1,7 +1,7 @@
 # Attention:
 - This package is under active development. 
 - Currently, package is unusuable.
-- It will be released
+- It will be released soon
 
 #  Anonymous NPU booster Library (previously: Intel® NPU Acceleration Library)
 
